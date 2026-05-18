@@ -9,6 +9,7 @@ library(randomForest)
 library(e1071)
 library(shinydashboardPlus)
 
+# 加载UI模块
 source("modules/ui_Input.R")
 source("modules/ui_predict.R")
 source("modules/ui_shap.R")
@@ -22,9 +23,10 @@ logit_model <- readRDS("models/logit_model.rds")
 randomForest_model <- readRDS("models/randomForest_model.rds")
 svm_model <- readRDS("models/svm_model.rds")
 threshold <- readRDS("models/threshold.rds")
+
 ui <- dashboardPage(
   # 顶部导航栏（全新深蓝色）
-  dashboardHeader(title = "抑郁障碍复发风险预测系统",
+  dashboardHeader(title = "抑郁障碍复发风险预测",
                   titleWidth = 250),
   
   # 侧边栏（全新浅蓝配色）
