@@ -1,4 +1,4 @@
-server_shap <- function(input, output, session) {
+server_shap <- function(input, output, session, logit_model, randomForest_model, svm_model, threshold) {
   
   # 加载随机森林模型
   rf_model <- readRDS("models/randomForest_model.rds")  # 使用相对路径
