@@ -113,7 +113,7 @@ threshold <- readRDS("models/threshold.rds")
       logit_prob <- predict(logit_model, newdata, type = "response")
       
       # 2. 随机森林预测
-      rf_prob <- predict(rf_model, newdata, type = "prob")[, 2]
+      rf_prob <- predict(randomForest_model, newdata, type = "prob")[, 2]
       
       # 3. SVM预测
       svm_prob_pred <- predict(svm_model, newdata, probability = TRUE)
