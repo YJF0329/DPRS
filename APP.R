@@ -9,17 +9,15 @@ library(randomForest)
 library(e1071)
 library(shinydashboardPlus)
 
-# 加载UI模块
-source("ui_input.R")
-source("ui_predict.R")
-source("ui_shap.R")
-source("ui_export.R")
+source("modules/ui_input.R")
+source("modules/ui_predict.R")
+source("modules/ui_shap.R")
+source("modules/ui_export.R")
 
-# 加载Server模块
-source("server_input.R")
-source("server_predict.R")
-source("server_shap.R")
-source("server_export.R")
+source("modules/server_input.R")
+source("modules/server_predict.R")
+source("modules/server_shap.R")
+source("modules/server_export.R")
 
 ui <- dashboardPage(
   # 顶部导航栏（全新深蓝色）
