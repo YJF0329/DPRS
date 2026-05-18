@@ -18,7 +18,10 @@ source("modules/server_input.R")
 source("modules/server_predict.R")
 source("modules/server_shap.R")
 source("modules/server_export.R")
-
+logit_model <- readRDS("models/logit_model.rds")
+randomForest_model <- readRDS("models/randomForest_model.rds")
+svm_model <- readRDS("models/svm_model.rds")
+threshold <- readRDS("models/threshold.rds")
 ui <- dashboardPage(
   # 顶部导航栏（全新深蓝色）
   dashboardHeader(title = "抑郁障碍复发风险险预测系统",
