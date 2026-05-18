@@ -9,7 +9,7 @@ library(randomForest)
 library(e1071)
 library(shinydashboardPlus)
 
-source("modules/ui_input.R")
+source("modules/ui_Input.R")
 source("modules/ui_predict.R")
 source("modules/ui_shap.R")
 source("modules/ui_export.R")
