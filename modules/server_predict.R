@@ -1,10 +1,10 @@
 server_predict <- function(input, output, session) {
   
   # 加载三个模型
-logit_model <- readRDS("models/logit_model.rds")
-randomForest_model <- readRDS("models/randomForest_model.rds")
-svm_model <- readRDS("models/svm_model.rds")
-threshold <- readRDS("models/threshold.rds")
+  logit_model <- readRDS("models/logit_model.rds")
+  randomForest_model <- readRDS("models/randomForest_model.rds")
+  svm_model <- readRDS("models/svm_model.rds")
+  threshold <- readRDS("models/threshold.rds")
   
   # 变量顺序（必须与训练时完全一致）
   var_order <- c("Location", "DH", "B2", "C5", "CGI", "Elect",
