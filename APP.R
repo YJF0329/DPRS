@@ -24,7 +24,7 @@ svm_model <- readRDS("models/svm_model.rds")
 threshold <- readRDS("models/threshold.rds")
 ui <- dashboardPage(
   # 顶部导航栏（全新深蓝色）
-  dashboardHeader(title = "抑郁障碍复发风险险预测系统",
+  dashboardHeader(title = "抑郁障碍复发风险预测系统",
                   titleWidth = 250),
   
   # 侧边栏（全新浅蓝配色）
