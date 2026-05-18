@@ -1,7 +1,7 @@
-server_shap <- function(input, output, session, logit_model, randomForest_model, svm_model, threshold) {
+server_shap <- function(input, output, session) {
   
   # 加载随机森林模型
-  rf_model <- readRDS("models/randomForest_model.rds")  # 使用相对路径
+  rf_model <- readRDS("models/randomForest_model.rds")
   
   # 变量名称（中文）
   var_names <- c(
@@ -28,6 +28,20 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
                  "Weight", "GAF", "MADRS", "NSQ", "NEO", 
                  "PSQI", "BHS", "SF", "LymC", "EosP")
   
+  # 【重要】标准化参数（和模型训练时完全一致）
+  scale_params <- list(
+    Weight = list(mean = 61.9332, sd = 12.79138),
+    GAF = list(mean = 48.98, sd = 12.927),
+    MADRS = list(mean = 19.46, sd = 8.392),
+    NSQ = list(mean = 40.53, sd = 4.238),
+    NEO = list(mean = 186.08, sd = 19.525),
+    PSQI = list(mean = 11.58, sd = 4.520),
+    BHS = list(mean = 10.01, sd = 5.207),
+    SF = list(mean = 26.73, sd = 6.372),
+    LymC = list(mean = 1.9549, sd = 0.70145),
+    EosP = list(mean = 2.3145, sd = 1.99972)
+  )
+  
   # 计算SHAP值（基于随机森林）
   observeEvent(input$shap_btn, {
     
@@ -45,7 +59,7 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
     waiter::waiter_show(
       html = tagList(
         spin_ring(),
-        h3("正在计算SHAP值...")
+        h3("正在计算风险值...")
       )
     )
     
@@ -76,7 +90,7 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
       # 预测概率
       prob <- predict(rf_model, newdata, type = "prob")[, 2]
       
-      # 计算SHAP值（基于随机森林的变量重要性 + 特征值）
+      # 计算SHAP值（基于随机森林的变量重要性 + 标准化后的值）
       importance_values <- randomForest::importance(rf_model)
       
       shap_values <- data.frame(
@@ -99,8 +113,21 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
         value <- as.numeric(raw_data[[var]])
         if(is.na(value)) value <- 0
         
-        # 计算贡献度
-        contribution <- importance * value / 1000  # 缩放因子
+        # ==================== 核心修复 ====================
+        # 连续变量标准化（和模型训练一致）
+        if(var %in% names(scale_params)) {
+          v_mean <- scale_params[[var]]$mean
+          v_sd   <- scale_params[[var]]$sd
+          value_scaled <- (value - v_mean) / v_sd
+        } else {
+          # 分类变量不标准化
+          value_scaled <- value
+        }
+        
+        # 用【标准化后的值】计算贡献（解决体重永远第一）
+        contribution <- importance * value_scaled / 1000
+        
+        # ===================================================
         
         shap_df <- data.frame(
           变量 = var_names[var],
@@ -134,7 +161,7 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
             # 顶部风险概率卡片
             div(style = "background:#ffffff; border-radius:16px; padding:24px; 
                   box-shadow:0 8px 24px rgba(0,0,0,0.06); margin-bottom:28px;",
-                h3(paste0("🎯 随机森林预测风险概率：", round(prob * 100, 1), "%"), 
+                h3(paste0("🎯 预测风险概率：", round(prob * 100, 1), "%"), 
                    style = "text-align:center; font-weight:600; color:#111827;"),
                 hr(style = "border-color:#E5E7EB; margin:16px 0;"),
                 p("🔴 红色特征 = 增加风险 ｜ 🔵 蓝色特征 = 降低风险", 
@@ -144,7 +171,7 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
             # SHAP贡献图表
             div(style = "background:#ffffff; border-radius:16px; padding:24px; 
                   box-shadow:0 8px 24px rgba(0,0,0,0.06); margin-bottom:28px;",
-                h4("📊 各特征贡献度（SHAP值）", style = "font-weight:600; color:#111827;"),
+                h4("📊 各特征贡献度", style = "font-weight:600; color:#111827;"),
                 plotlyOutput("shap_plot", height = "500px")
             ),
             
@@ -159,9 +186,10 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
         )
       })
       
-      # 表格样式美化（修复 align 报错）
+      # 表格样式美化
       output$shap_table <- renderTable({
         df <- shap_values[, c("变量", "原始值", "SHAP值", "影响方向")]
+        colnames(df) <- c("变量", "原始值", "风险值", "影响方向")
         df
       }, 
       striped = TRUE, 
@@ -169,7 +197,7 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
       hover = TRUE,
       width = "100%", 
       spacing = "m",
-      align = "c")  # 修复：改为单个字符串，不是向量
+      align = "c")
       
       # Plotly 图表
       output$shap_plot <- renderPlotly({
@@ -193,7 +221,7 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
           ),
           hovertext = ~paste0(
             "特征：", 变量,
-            "<br>SHAP值：", round(SHAP值, 4),
+            "<br>风险值：", round(SHAP值, 4),
             "<br>原始值：", 原始值,
             "<br>影响：", 影响方向
           ),
@@ -201,11 +229,11 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
         ) %>%
           layout(
             title = list(
-              text = "特征风险贡献SHAP分析（Top10）",
+              text = "特征风险贡献分析（Top10）",
               font = list(size = 16, color = "#1F2937")
             ),
             xaxis = list(
-              title = "标准化SHAP值",
+              title = "标准化风险值",
               zeroline = TRUE,
               zerolinecolor = "#9CA3AF",
               zerolinewidth = 1.5,
@@ -227,7 +255,7 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
     }, error = function(e) {
       output$shap_display <- renderUI({
         div(style = "padding:20px; color:red; background:#fee; border-radius:10px;",
-            h4("SHAP计算失败"),
+            h4("计算失败"),
             p("错误信息：", e$message),
             p("请检查数据完整性")
         )
@@ -238,9 +266,10 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
     
     shinyalert::shinyalert(
       title = "计算完成",
-      text = paste("SHAP值已生成，风险概率：", round(prob * 100, 1), "%"),
+      text = paste("风险概率：", round(prob * 100, 1), "%"),
       type = "success",
-      timer = 1800
+      closeOnEsc = TRUE,
+      closeOnClickOutside = TRUE
     )
   })
   
@@ -249,11 +278,9 @@ server_shap <- function(input, output, session, logit_model, randomForest_model,
     if(is.null(session$userData$shap_values)) {
       div(style = "text-align: center; padding: 60px 20px;",
           icon("chart-pie", "fa-4x", style = "color:#9CA3AF; margin-bottom:20px;"),
-          h3("等待 SHAP 分析", style = "color:#374151; font-weight:600;"),
-          p("点击上方「计算SHAP值」按钮开始分析", style = "color:#6B7280; font-size:16px;")
+          h3("等待分析", style = "color:#374151; font-weight:600;"),
+          p("点击上方「计算」按钮开始分析", style = "color:#6B7280; font-size:16px;")
       )
     }
   })
-  
-  return(list())
 }
