@@ -4,6 +4,8 @@
 > An interpretable machine learning platform for predicting depression recurrence risk using R-Shiny.
 
 ---
+#🔗 在线演示地址 
+> Demo：https://019e3a02-83c7-19d9-de37-d8ae0c15aa3b.share.connect.posit.cloud/
 
 ## ✨ Features
 
