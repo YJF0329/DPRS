@@ -1,7 +1,7 @@
 server_shap <- function(input, output, session) {
   
   # 加载随机森林模型
-  rf_model <- readRDS("randomForest_model.rds")  # 使用相对路径
+  rf_model <- readRDS("models/randomForest_model.rds")  # 使用相对路径
   
   # 变量名称（中文）
   var_names <- c(
