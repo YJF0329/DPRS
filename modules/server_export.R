@@ -13,13 +13,11 @@ server_export <- function(input, output, session) {
     risk_color <- ifelse(p < 0.3, "#10B981", ifelse(p < 0.7, "#F59E0B", "#EF4444"))
     risk_label <- ifelse(p < 0.3, "低风险", ifelse(p < 0.7, "中风险", "高风险"))
     
-    # 获取患者基本信息
-    patient_name <- session$userData$patient_data$name
-    patient_id <- session$userData$patient_data$id
-    patient_age <- session$userData$patient_data$age
+    # 获取患者基本信息（注意：现在 patient_name 存储的是患者编号）
+    patient_id <- session$userData$patient_data$name      # 患者编号
+    patient_age <- session$userData$patient_data$age      # 年龄
     
     # 处理空值
-    if(is.null(patient_name) || patient_name == "") patient_name <- "未填写"
     if(is.null(patient_id) || patient_id == "") patient_id <- "未填写"
     if(is.null(patient_age) || is.na(patient_age)) patient_age <- "未填写"
     
@@ -30,8 +28,7 @@ server_export <- function(input, output, session) {
         hr(style = "border-top:2px solid #165DFF;"),
         
         h3("一、患者基础信息", style = "color:#222;"),
-        p(paste("患者姓名：", patient_name)),
-        p(paste("病历号：", patient_id)),
+        p(paste("患者编号：", patient_id)),                     # 改为患者编号
         p(paste("年龄：", patient_age, if(is.numeric(patient_age)) "岁" else "")),
         p(paste("所在地：", session$userData$raw_data$Location)),
         p(paste("疾病史：", session$userData$raw_data$DH)),
@@ -99,9 +96,9 @@ server_export <- function(input, output, session) {
   # 导出HTML报告
   output$download_pdf <- downloadHandler(
     filename = function() {
-      patient_name <- session$userData$patient_data$name
-      if(is.null(patient_name) || patient_name == "") patient_name <- "患者"
-      paste0(patient_name, "_风险报告_", Sys.Date(), ".html")
+      patient_id <- session$userData$patient_data$name
+      if(is.null(patient_id) || patient_id == "") patient_id <- "患者"
+      paste0(patient_id, "_风险报告_", Sys.Date(), ".html")
     },
     content = function(file) {
       req(session$userData$patient_data, session$userData$raw_data, session$userData$prediction)
@@ -125,11 +122,9 @@ server_export <- function(input, output, session) {
       risk_color <- ifelse(p < 0.3, "#10B981", ifelse(p < 0.7, "#F59E0B", "#EF4444"))
       risk_label <- ifelse(p < 0.3, "低风险", ifelse(p < 0.7, "中风险", "高风险"))
       
-      patient_name <- session$userData$patient_data$name
-      patient_id <- session$userData$patient_data$id
-      patient_age <- session$userData$patient_data$age
+      patient_id <- session$userData$patient_data$name      # 患者编号
+      patient_age <- session$userData$patient_data$age      # 年龄
       
-      if(is.null(patient_name) || patient_name == "") patient_name <- "未填写"
       if(is.null(patient_id) || patient_id == "") patient_id <- "未填写"
       if(is.null(patient_age) || is.na(patient_age)) patient_age <- "未填写"
       
@@ -138,8 +133,7 @@ server_export <- function(input, output, session) {
           p(paste("生成时间：", format(Sys.time(), "%Y-%m-%d %H:%M:%S")), style = "text-align:center; color:#666;"),
           hr(),
           h3("一、基础信息"),
-          p(paste("患者姓名：", patient_name)),
-          p(paste("病历号：", patient_id)),
+          p(paste("患者编号：", patient_id)),                 # 改为患者编号
           p(paste("年龄：", patient_age, if(is.numeric(patient_age)) "岁" else "")),
           p(paste("所在地：", session$userData$raw_data$Location)),
           p(paste("疾病史：", session$userData$raw_data$DH)),
@@ -167,11 +161,9 @@ generate_html_report <- function(session) {
   risk_color <- ifelse(p < 0.3, "#10B981", ifelse(p < 0.7, "#F59E0B", "#EF4444"))
   risk_label <- ifelse(p < 0.3, "低风险", ifelse(p < 0.7, "中风险", "高风险"))
   
-  patient_name <- session$userData$patient_data$name
-  patient_id <- session$userData$patient_data$id
-  patient_age <- session$userData$patient_data$age
+  patient_id <- session$userData$patient_data$name      # 患者编号
+  patient_age <- session$userData$patient_data$age      # 年龄
   
-  if(is.null(patient_name) || patient_name == "") patient_name <- "未填写"
   if(is.null(patient_id) || patient_id == "") patient_id <- "未填写"
   if(is.null(patient_age) || is.na(patient_age)) patient_age <- "未填写"
   
@@ -303,8 +295,7 @@ generate_html_report <- function(session) {
       
       <h3>一、患者基础信息</h3>
       <div class="info-box">
-        <p><strong>患者姓名：</strong>', patient_name, '</p>
-        <p><strong>病历号：</strong>', patient_id, '</p>
+        <p><strong>患者编号：</strong>', patient_id, '</p>
         <p><strong>年龄：</strong>', patient_age, if(is.numeric(patient_age)) "岁" else "", '</p>
         <p><strong>所在地：</strong>', session$userData$raw_data$Location, '</p>
         <p><strong>疾病史：</strong>', session$userData$raw_data$DH, '</p>
