@@ -16,9 +16,9 @@ ui_input <- function() {
       box(
         title = "📋 基本信息", width = 12, status = "info", solidHeader = FALSE,
         fluidRow(
-          column(4, textInput("patient_name", "患者姓名", placeholder = "请输入姓名")),
-          column(4, textInput("patient_id", "病历号", placeholder = "例如: 20240001")),
+          column(4, textInput("patient_name", "患者编号（8位）", placeholder = "请输入8位编号，如：20240001")),
           column(4, numericInput("patient_age", "年龄", value = NA, min = 0, max = 120, step = 1))
+          # 病历号已删除
         ),
         fluidRow(
           column(6, selectInput("Location", "所在地状况", c("", "城市", "农村"))),
